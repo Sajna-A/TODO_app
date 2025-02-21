@@ -42,7 +42,16 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getTasks() async {
     final db = await instance.database;
-    return await db.query('tasks');
+    final result = await db.query('tasks');
+
+    return result.map((task) {
+      return {
+        "id": task["id"] as int,
+        "title": task["title"],
+        "description": task["description"],
+        "completed": task["completed"],
+      };
+    }).toList();
   }
 
   Future<int> updateTask(int id, Map<String, dynamic> updatedTask) async {

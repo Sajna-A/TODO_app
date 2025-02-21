@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todo_app/BLOC/CUBIT/cubit/todo_task_cubit.dart';
 
 class AddTaskScreen extends StatefulWidget {
@@ -33,13 +34,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       final newTask = {
         "title": titleController.text,
         "description": descriptionController.text,
-        "completed": "0",
+        "completed": "0", // Keeping as String (assuming database expects this)
       };
 
       if (widget.existingTask != null) {
-        widget.todoTaskCubit.editTask(widget.existingTask!["id"], newTask);
+        // ✅ Convert id to int before passing
+        int taskId = int.tryParse(widget.existingTask!["id"].toString()) ?? 0;
+        BlocProvider.of<TodoTaskCubit>(context).editTask(taskId, newTask);
       } else {
-        widget.todoTaskCubit.addTask(newTask);
+        BlocProvider.of<TodoTaskCubit>(context).addTask(newTask);
       }
 
       Navigator.pop(context, true);
@@ -50,13 +53,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingTask != null ? "Edit Task" : "Add Task"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveTask,
-          )
-        ],
+        title: Text(
+          widget.existingTask != null ? "Edit Task" : "Add Task",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -64,16 +64,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           children: [
             TextField(
               controller: titleController,
-              decoration: const InputDecoration(labelText: "Title"),
+              decoration: const InputDecoration(
+                  border: OutlineInputBorder(), hintText: "Title"),
+            ),
+            SizedBox(
+              height: 10,
             ),
             TextField(
               controller: descriptionController,
-              decoration: const InputDecoration(labelText: "Description"),
+              decoration: const InputDecoration(
+                  border: OutlineInputBorder(), hintText: "Description"),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 15, 77, 127),
+              ),
               onPressed: _saveTask,
-              child: const Text("Save"),
+              child: const Text("Save", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
